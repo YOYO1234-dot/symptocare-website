@@ -1,0 +1,433 @@
+import React, { useState, useEffect } from 'react';
+
+// Star icon from lucide-react (simulated as lucide-react isn't directly available in this environment)
+// In a real React app, you would import { Star } from 'lucide-react';
+const StarIcon = ({ fill = 'none', stroke = 'currentColor', className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill={fill}
+    stroke={stroke}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+// Define icons using inline SVG for broader compatibility in this environment
+// In a real React app, you would typically import them from an icon library like lucide-react or react-icons
+const icons = {
+  BrainCircuit: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain-circuit">
+      <path d="M12 4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z" />
+      <path d="M16 10h4a2 2 0 0 1 0 4h-4" />
+      <path d="M8 10H4a2 2 0 0 0 0 4h4" />
+      <path d="M12 20v2" />
+      <path d="M14 22h-4" />
+      <path d="M12 2v2" />
+      <path d="M14 2h-4" />
+    </svg>
+  ),
+  Pill: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pill">
+      <path d="m10.5 4.5 9 9a2.26 2.26 0 0 1-3.04 3.04l-9-9a2.26 2.26 0 0 1 3.04-3.04Z" />
+      <path d="m8.5 16.5 5-5" />
+      <path d="m11 20 9-9" />
+      <path d="m4 13 9-9" />
+    </svg>
+  ),
+  Stethoscope: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-stethoscope">
+      <path d="M10 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+      <path d="M2 12h10" />
+      <path d="M18 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+      <path d="M17 18H9" />
+      <path d="M18 12h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5a2 2 0 0 0-2 2v3.5" />
+    </svg>
+  ),
+  Lightbulb: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lightbulb">
+      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 6c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5" />
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+      <path d="M12 22v-4" />
+    </svg>
+  ),
+  MessageSquareQuote: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square-quote">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M8 10h.01" />
+      <path d="M12 10h.01" />
+      <path d="M16 10h.01" />
+    </svg>
+  )
+};
+
+// Feature data
+const features = [
+  {
+    id: 'symptom-analysis',
+    title: 'Symptom Analysis',
+    icon: 'BrainCircuit',
+    description: 'AI-powered diagnostic assistant that intelligently processes your symptoms to provide potential conditions.',
+    details: 'Leveraging advanced machine learning algorithms, SymptoCare analyzes a vast database of medical knowledge to identify patterns and suggest possible illnesses based on the symptoms you describe. It considers various factors, including duration, severity, and associated symptoms, to offer a comprehensive assessment.'
+  },
+  {
+    id: 'remedy-suggestions',
+    title: 'Remedy Suggestions',
+    icon: 'Pill',
+    description: 'Offers personalized recommendations for home remedies and over-the-counter medications.',
+    details: 'Based on the identified conditions, SymptoCare provides actionable advice, ranging from common home remedies (e.g., rest, hydration, specific foods) to suitable over-the-counter medications. It also advises on dosages and potential side effects, ensuring you make informed decisions about your immediate care.'
+  },
+  {
+    id: 'doctor-recommendation',
+    title: 'Doctor Recommendation',
+    icon: 'Stethoscope',
+    description: 'Guides you to the right medical specialist for your condition, streamlining your healthcare journey.',
+    details: 'When professional medical attention is needed, SymptoCare intelligently suggests the most appropriate type of doctor or specialist (e.g., general practitioner, dermatologist, cardiologist). It can also provide guidance on when a visit is urgent, helping you navigate the healthcare system efficiently.'
+  },
+  {
+    id: 'personalized-insights',
+    title: 'Personalized Health Insights',
+    icon: 'Lightbulb',
+    description: 'Provides proactive health tips and insights based on your profile and past interactions (upcoming feature).',
+    details: 'This exciting upcoming feature will analyze your health trends, demographics, and past symptom history to offer personalized preventative care advice. From dietary suggestions to exercise routines and regular check-up reminders, SymptoCare aims to empower you to maintain long-term health and well-being.'
+  }
+];
+
+// Sample customer reviews
+const initialReviews = [
+  { id: 1, name: 'Alice M.', rating: 5, feedback: 'SymptoCare is a lifesaver! Quick, accurate, and incredibly helpful for initial guidance.' },
+  { id: 2, name: 'Bob J.', rating: 4, feedback: 'Very useful for understanding symptoms. Recommended a great specialist.' },
+  { id: 3, name: 'Charlie K.', rating: 5, feedback: 'The best AI consultant I\'ve used. Love the remedy suggestions.' },
+];
+
+// Component for a single Star Rating
+const StarRating = ({ rating, setRating = null, editable = false }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+
+  return (
+    <div className="flex justify-center sm:justify-start">
+      {[...Array(5)].map((_, index) => {
+        const starValue = index + 1;
+        return (
+          <div
+            key={index}
+            className={`relative cursor-pointer ${editable ? 'hover:scale-110 transition-transform' : ''}`}
+            onClick={() => editable && setRating(starValue)}
+          >
+            <StarIcon className="w-6 h-6 text-gray-300" stroke="currentColor" fill="none" /> {/* Outline */}
+            {starValue <= fullStars && (
+              <div className="absolute inset-0 overflow-hidden">
+                <StarIcon className="w-6 h-6 text-yellow-400" stroke="currentColor" fill="currentColor" />
+              </div>
+            )}
+            {hasHalfStar && starValue === fullStars + 1 && (
+              <div className="absolute inset-0 overflow-hidden" style={{ width: `${(rating % 1) * 100}%` }}>
+                <StarIcon className="w-6 h-6 text-yellow-400" stroke="currentColor" fill="currentColor" />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Modal Component
+const FeatureModal = ({ show, onClose, content }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 p-4 animate-fadeIn">
+      <div className="relative bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform scale-95 animate-scaleUp">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
+          aria-label="Close"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+        <h3 className="text-3xl font-bold text-gray-800 mb-4">{content.title}</h3>
+        <p className="text-gray-600 leading-relaxed text-lg">{content.details}</p>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({});
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [customerReviews, setCustomerReviews] = useState(initialReviews);
+
+  // Calculate average rating
+  const averageRating = customerReviews.length > 0
+    ? (customerReviews.reduce((sum, review) => sum + review.rating, 0) / customerReviews.length).toFixed(1)
+    : 0;
+
+  const handleOpenModal = (feature) => {
+    setModalContent(feature);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setModalContent({});
+  };
+
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    if (feedbackRating > 0 && feedbackText.trim() !== '') {
+      const newReview = {
+        id: customerReviews.length + 1,
+        name: 'Anonymous User', // For demo, assuming anonymous submission
+        rating: feedbackRating,
+        feedback: feedbackText.trim()
+      };
+      setCustomerReviews([...customerReviews, newReview]);
+      setFeedbackRating(0);
+      setFeedbackText('');
+      alert('Thank you for your feedback!'); // Using alert for demo simplicity as per instructions. For production, use custom modal.
+    } else {
+      alert('Please provide a rating and your feedback.');
+    }
+  };
+
+  useEffect(() => {
+    // Basic effect for demonstration, could be used for initial data loading or animations
+    console.log('SymptoCare Infographic Loaded');
+  }, []);
+
+  return (
+    <div className="font-['Inter'] antialiased bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Hero Section */}
+      <section className="text-center mb-16 w-full max-w-4xl animate-slideInUp">
+        <h1 className="text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+          SymptoCare: Your Personal AI Healthcare Consultant
+        </h1>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          Revolutionizing how you approach health, SymptoCare acts as your intelligent guide, offering instant insights, personalized remedies, and professional doctor recommendations right when you need them.
+        </p>
+        <div className="flex justify-center space-x-4">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Learn More
+          </button>
+          <button className="bg-white text-blue-600 border border-blue-600 font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Get Started
+          </button>
+        </div>
+      </section>
+
+      {/* Key Features Section */}
+      <section className="mb-16 w-full max-w-6xl">
+        <h2 className="text-4xl font-bold text-center text-gray-800 mb-10 animate-fadeIn">
+          Key Features
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, index) => {
+            const IconComponent = icons[feature.icon];
+            return (
+              <div
+                key={feature.id}
+                className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer animate-fadeIn"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => handleOpenModal(feature)}
+              >
+                <div className="p-4 bg-blue-100 text-blue-600 rounded-full mb-4">
+                  {IconComponent && <IconComponent className="w-10 h-10" />}
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 text-base flex-grow">{feature.description}</p>
+                <span className="text-blue-600 font-medium mt-4 group flex items-center justify-center">
+                  Read More
+                  <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="mb-16 w-full max-w-5xl">
+        <h2 className="text-4xl font-bold text-center text-gray-800 mb-10 animate-fadeIn">
+          How It Works
+        </h2>
+        <div className="relative flex flex-col md:flex-row items-center justify-between p-8 bg-blue-600 text-white rounded-xl shadow-lg animate-slideInRight">
+          {/* Step 1 */}
+          <div className="flex flex-col items-center text-center p-4">
+            <div className="bg-blue-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white">1</div>
+            <p className="font-semibold text-lg">Describe Symptoms</p>
+            <p className="text-sm opacity-90">Tell SymptoCare how you feel.</p>
+          </div>
+          {/* Arrow 1 */}
+          <div className="hidden md:block w-24 h-1 bg-white mx-4 my-4 relative animate-pulse">
+            <div className="absolute right-0 top-1/2 -mt-2 w-0 h-0 border-l-8 border-l-white border-y-4 border-y-transparent"></div>
+          </div>
+          <div className="block md:hidden h-24 w-1 bg-white my-4 relative animate-pulse">
+            <div className="absolute bottom-0 left-1/2 -ml-2 h-0 w-0 border-t-8 border-t-white border-x-4 border-x-transparent"></div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex flex-col items-center text-center p-4">
+            <div className="bg-blue-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white">2</div>
+            <p className="font-semibold text-lg">AI Analysis</p>
+            <p className="text-sm opacity-90">Get instant AI-driven insights.</p>
+          </div>
+          {/* Arrow 2 */}
+          <div className="hidden md:block w-24 h-1 bg-white mx-4 my-4 relative animate-pulse">
+            <div className="absolute right-0 top-1/2 -mt-2 w-0 h-0 border-l-8 border-l-white border-y-4 border-y-transparent"></div>
+          </div>
+          <div className="block md:hidden h-24 w-1 bg-white my-4 relative animate-pulse">
+            <div className="absolute bottom-0 left-1/2 -ml-2 h-0 w-0 border-t-8 border-t-white border-x-4 border-x-transparent"></div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex flex-col items-center text-center p-4">
+            <div className="bg-blue-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white">3</div>
+            <p className="font-semibold text-lg">Receive Guidance</p>
+            <p className="text-sm opacity-90">Remedies & doctor recommendations.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Feedback Section */}
+      <section className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 animate-fadeIn delay-500ms">
+        <h2 className="text-4xl font-bold text-center text-gray-800 mb-6">
+          What Our Users Say
+        </h2>
+        <div className="flex items-center justify-center mb-6">
+          <span className="text-5xl font-bold text-yellow-500 mr-3">{averageRating}</span>
+          <StarRating rating={parseFloat(averageRating)} />
+          <span className="text-gray-600 text-lg ml-3">({customerReviews.length} reviews)</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {customerReviews.slice(0, 4).map(review => ( // Show up to 4 reviews
+            <div key={review.id} className="bg-gray-50 p-5 rounded-lg border border-gray-100 shadow-sm animate-scaleIn">
+              <div className="flex items-center mb-3">
+                <StarRating rating={review.rating} />
+                <span className="ml-3 text-gray-700 font-semibold">{review.name}</span>
+              </div>
+              <p className="text-gray-700 italic">
+                <icons.MessageSquareQuote className="inline-block w-5 h-5 text-gray-400 mr-2 -mt-1" />
+                "{review.feedback}"
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="text-3xl font-bold text-center text-gray-800 mb-6">Share Your Feedback</h3>
+        <form onSubmit={handleFeedbackSubmit} className="flex flex-col items-center">
+          <div className="mb-4">
+            <label htmlFor="rating" className="block text-gray-700 text-lg font-medium mb-2">Your Rating:</label>
+            <StarRating rating={feedbackRating} setRating={setFeedbackRating} editable={true} />
+          </div>
+          <div className="w-full mb-6">
+            <label htmlFor="feedback" className="block text-gray-700 text-lg font-medium mb-2">Your Comments:</label>
+            <textarea
+              id="feedback"
+              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-y min-h-[100px] text-gray-800"
+              placeholder="Tell us what you think..."
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              required
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+          >
+            Submit Feedback
+          </button>
+        </form>
+      </section>
+
+      {/* Feature Modal */}
+      <FeatureModal show={showModal} onClose={handleCloseModal} content={modalContent} />
+
+      {/* Global Styles (Tailwind CSS, Font) - normally configured via postcss/webpack */}
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+          body { font-family: 'Inter', sans-serif; }
+
+          /* Custom Animations */
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out forwards;
+          }
+          .delay-500ms {
+            animation-delay: 0.5s;
+          }
+
+          @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-slideInUp {
+            animation: slideInUp 0.8s ease-out forwards;
+          }
+
+          @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+          .animate-slideInRight {
+            animation: slideInRight 0.8s ease-out forwards;
+          }
+
+          @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+          }
+          .animate-scaleIn {
+            animation: scaleIn 0.5s ease-out forwards;
+          }
+
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+          }
+          .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+
+          /* Modal Animations */
+          @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          .animate-fadeIn {
+            animation: fadeInModal 0.3s ease-out forwards;
+          }
+
+          @keyframes scaleUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+          .animate-scaleUp {
+            animation: scaleUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          }
+        `}
+      </style>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </div>
+  );
+};
+
+export default App;
